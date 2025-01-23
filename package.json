@@ -1,15 +1,19 @@
 {
   "name": "whatsapp-server",
   "version": "1.0.0",
-  "description": "WhatsApp Web Server",
+  "description": "WhatsApp Web API server",
   "main": "whatsapp-server.js",
   "scripts": {
     "start": "node whatsapp-server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
+    "cors": "^2.8.5",
     "whatsapp-web.js": "^1.23.0",
     "qrcode": "^1.5.3",
-    "cors": "^2.8.5"
+    "puppeteer": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

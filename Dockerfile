@@ -1,35 +1,28 @@
-FROM node:18-slim
+FROM node:20-slim
 
-# Установка зависимостей для Chrome
-RUN apt-get update \
-    && apt-get install -y wget gnupg \
-    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
-    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+# Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Korean and Thai)
+RUN apt-get update && apt-get install -y wget gnupg2 apt-utils
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
     && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
     --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/* \
-    && mkdir -p /usr/share/whatsapp-data
+    && rm -rf /var/lib/apt/lists/*
 
-# Установка рабочей директории
-WORKDIR /app
+# Create app directory
+WORKDIR /usr/src/app
 
-# Копирование package.json и package-lock.json
+# Install app dependencies
 COPY package*.json ./
-
-# Установка зависимостей
 RUN npm install
 
-# Копирование остальных файлов
+# Bundle app source
 COPY . .
 
-# Установка переменных окружения для puppeteer
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-ENV DATA_PATH=/usr/share/whatsapp-data
+# Set environment variables
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 
-# Открытие порта
 EXPOSE 3001
 
-# Запуск приложения
-CMD ["node", "whatsapp-server.js"]
+CMD [ "npm", "start" ]
