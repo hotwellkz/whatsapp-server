@@ -4,8 +4,7 @@
   "description": "WhatsApp Web API server",
   "main": "whatsapp-server.js",
   "scripts": {
-    "start": "node whatsapp-server.js",
-    "postinstall": "node node_modules/puppeteer/install.js"
+    "start": "node whatsapp-server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
@@ -15,6 +14,6 @@
     "puppeteer": "^21.7.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.x"
   }
 }

@@ -2,7 +2,6 @@ const express = require('express');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode');
 const cors = require('cors');
-const puppeteer = require('puppeteer');
 
 const app = express();
 app.use(cors());
@@ -22,7 +21,6 @@ const client = new Client({
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
             '--disable-gpu'
         ]
     }
