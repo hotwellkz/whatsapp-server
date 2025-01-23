@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: whatsapp-server
+    env: docker
+    plan: starter
+    healthCheckPath: /health
+    buildCommand: docker build -t whatsapp-server .
+    startCommand: docker run -p $PORT:10000 whatsapp-server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+    autoDeploy: true
