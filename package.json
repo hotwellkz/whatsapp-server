@@ -4,7 +4,8 @@
   "description": "WhatsApp Web API server",
   "main": "whatsapp-server.js",
   "scripts": {
-    "start": "node whatsapp-server.js"
+    "start": "node whatsapp-server.js",
+    "postinstall": "apt-get update && apt-get install -y chromium"
   },
   "dependencies": {
     "express": "^4.18.2",

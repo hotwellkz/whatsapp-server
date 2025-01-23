@@ -13,7 +13,7 @@ app.get('/', (req, res) => {
 
 const client = new Client({
     authStrategy: new LocalAuth({
-        dataPath: process.env.DATA_PATH || './whatsapp-data'
+        dataPath: './whatsapp-data'
     }),
     puppeteer: {
         headless: true,
@@ -21,17 +21,10 @@ const client = new Client({
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process',
             '--disable-gpu',
-            '--disable-software-rasterizer',
-            '--disable-web-security',
-            '--disable-features=IsolateOrigins,site-per-process'
+            '--disable-software-rasterizer'
         ],
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
-        timeout: 60000
+        executablePath: process.env.CHROME_BIN || '/usr/bin/chromium'
     }
 });
 
