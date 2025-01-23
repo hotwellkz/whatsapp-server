@@ -8,7 +8,9 @@ app.use(cors());
 app.use(express.json());
 
 const client = new Client({
-    authStrategy: new LocalAuth(),
+    authStrategy: new LocalAuth({
+        dataPath: './whatsapp-auth'
+    }),
     puppeteer: {
         headless: true,
         args: [
@@ -19,13 +21,39 @@ const client = new Client({
             '--no-first-run',
             '--no-zygote',
             '--single-process',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--disable-extensions',
+            '--disable-software-rasterizer',
+            '--ignore-certificate-errors',
+            '--disable-infobars'
         ],
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || null,
+        defaultViewport: {
+            width: 1280,
+            height: 720
+        }
     }
 });
 
 let qrCodeData = '';
+let isInitialized = false;
+let initializationError = null;
+
+const initializeClient = async () => {
+    try {
+        console.log('Initializing WhatsApp client...');
+        await client.initialize();
+        isInitialized = true;
+        initializationError = null;
+        console.log('WhatsApp client initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize WhatsApp client:', error);
+        isInitialized = false;
+        initializationError = error.message;
+        // Попытка переинициализации через 30 секунд
+        setTimeout(initializeClient, 30000);
+    }
+};
 
 client.on('qr', async (qr) => {
     console.log('QR Code received');
@@ -38,6 +66,7 @@ client.on('qr', async (qr) => {
 
 client.on('ready', () => {
     console.log('Client is ready!');
+    isInitialized = true;
 });
 
 client.on('message', msg => {
@@ -46,31 +75,38 @@ client.on('message', msg => {
 
 client.on('auth_failure', (err) => {
     console.error('Authentication failed:', err);
+    isInitialized = false;
+    // Попытка переинициализации при ошибке аутентификации
+    setTimeout(initializeClient, 30000);
 });
 
 client.on('disconnected', (reason) => {
     console.log('Client was disconnected:', reason);
-    // Пытаемся переподключиться
-    client.initialize();
+    isInitialized = false;
+    // Попытка переподключения при разрыве соединения
+    setTimeout(initializeClient, 30000);
 });
 
 // Инициализируем клиент при старте
-client.initialize().catch(err => {
-    console.error('Failed to initialize client:', err);
-});
+initializeClient();
 
 // Endpoints
 app.get('/qr', (req, res) => {
     if (qrCodeData) {
         res.json({ qr: qrCodeData });
     } else {
-        res.status(404).json({ error: 'QR Code not available yet' });
+        res.status(404).json({ 
+            error: 'QR Code not available yet',
+            isInitialized,
+            initializationError 
+        });
     }
 });
 
 app.get('/status', (req, res) => {
     res.json({ 
-        status: client.pupPage ? 'CONNECTED' : 'DISCONNECTED'
+        status: isInitialized ? 'CONNECTED' : 'DISCONNECTED',
+        error: initializationError
     });
 });
 
@@ -79,6 +115,13 @@ app.post('/send', async (req, res) => {
     
     if (!number || !message) {
         return res.status(400).json({ error: 'Number and message are required' });
+    }
+
+    if (!isInitialized) {
+        return res.status(503).json({ 
+            error: 'WhatsApp client not initialized',
+            initializationError 
+        });
     }
 
     try {
@@ -93,10 +136,16 @@ app.post('/send', async (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-    res.json({ status: 'ok' });
+    res.json({ 
+        status: 'ok',
+        whatsapp: {
+            initialized: isInitialized,
+            error: initializationError
+        }
+    });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
