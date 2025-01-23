@@ -12,7 +12,7 @@
     "whatsapp-web.js": "^1.23.0",
     "qrcode": "^1.5.3",
     "cors": "^2.8.5",
-    "puppeteer": "^22.0.0"
+    "puppeteer-core": "^21.7.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"

@@ -5,10 +5,15 @@ services:
     plan: starter
     healthCheckPath: /health
     buildCommand: docker build -t whatsapp-server .
-    startCommand: docker run -p $PORT:10000 whatsapp-server
+    startCommand: docker run -p $PORT:10000 -e PORT=$PORT whatsapp-server
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
+      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
+        value: "true"
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: "/usr/bin/google-chrome-stable"
+    scaling:
+      minInstances: 1
+      maxInstances: 1
     autoDeploy: true
