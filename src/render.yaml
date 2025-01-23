@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: whatsapp-server
+    env: node
+    buildCommand: cd src && npm install
+    startCommand: cd src && npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 18.x
